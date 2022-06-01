@@ -23,11 +23,9 @@ void main()
 	int k,i=0;
 	printf("请输入能级数l\n");
 	scanf("%d",&k);    //输入能级数
-	
 	printf("请依次输入l个各能级上的粒子数\n");                   //若输入的数字大于l个，将自动赋值给w[]
 	for(i=0;i<k;i++)   
 	scanf("%d",&a[i]);
-	   
 	printf("请依次输入l个各能级上的简并度\n");
 	for(i=0;i<k;i++)
 	scanf("%d",&w[i]);
@@ -62,13 +60,10 @@ void Boltzmann_System(int a[],int w[],int l)                       //玻尔兹�
 
 	for(i=l-1;i>=0;i--)
 	{
-		a1=a[i];
-		
-		w1=w[i];
-		
+	    a1=a[i];
+       	    w1=w[i];	
 	    W=pow(w1,a1)*W;              
-	
-		A*=Fact(a1);
+	    A*=Fact(a1);
 	}	
 	SUM=N*W/A;
 	printf("波尔兹曼系统总的微观状态数为：%g\n",SUM);
@@ -83,89 +78,80 @@ void Bose_System(int a[],int w[],int l)
 	
 	for(i=0;i<l-1;i++)
 	{
-		n=n+a[i];
+	    n=n+a[i];
     }
 	N=Fact(n);
-
 	for(i=l-1;i>=0;i--)
 	{
-		a1=a[i];
-		w1=w[i]-1;
-		aw=a1+w1;
-    
-	    W=Fact(w1);
+	    a1=a[i];
+            w1=w[i]-1;
+            aw=a1+w1;
+            W=Fact(w1);
 	    WA=Fact(aw);
 	    A=Fact(a1);
-
-	SUM=SUM*WA/(A*W);
+            SUM=SUM*WA/(A*W);
 	}	
 	printf("波色系统总微观状态数%g\n",SUM);
-
 }
-
 void Fermi_System(int a[],int w[],int l)
 { 
 	int n=0,i=0;
 	long a1=0,w1=0,aw=0;
 	double N=1,W=1,A=1,WA=1;
-	double SUM=1;
-	
+	double SUM=1;	
 	for(i=0;i<l-1;i++)
 	{
-		n=n+a[i];
+	    n=n+a[i];
     }
 	while(n>0)
 	{
-		N=N*n;
-		n=n-1;
+	    N=N*n;
+            n=n-1;
 	}
 	for(i=l-1;i>=0;i--)
 	{
-		a1=a[i];
-		w1=w[i];
-		aw=w1-a1;
-	    
-		W=Fact(w1);
+	    a1=a[i];
+	    w1=w[i];
+	    aw=w1-a1;
+	    W=Fact(w1);
 	    WA=Fact(aw);
 	    A=Fact(a1);
-
-	SUM=SUM*W/(A*WA);
+            SUM=SUM*W/(A*WA);
 	}	
 	printf("费米系统总微观状态数%g\n",SUM);
 }
                      
 Boltzmann()
 {
-	int wq[size]={0};
-	double aq[size]={0};
-	long double eq[size]={0};
-  int i,w1,r;                        
-	float T=0,T0=20.3,t1=0,TV=0;                      //T表示输入的温度，T0为氢气在1pn时的沸点（单位为开尔文）,TV振动特征温度
-  double e1,er;                                      //er表示相应T值对应的e的阿尔法次方的值
-	long double a1=0,q=0,p=0,z1=0,Z=0,N=0,u1=0,U=0,N2,F=0,UV0=0,C0=0,Ut=0,Uv=0,Ur=0,Cv=0,Ct=0,Cr=0,m=0,n0=0;   //F表示自由能,Ct表示平动定体热容，Cv表示振动定体热容,Cr振动定体热容，Ut表示平动内能，Uv表示转动动能，Ur表示振动内能
+    int wq[size]={0};
+    double aq[size]={0};
+    long double eq[size]={0};
+    int i,w1,r;                        
+    float T=0,T0=20.3,t1=0,TV=0;                      //T表示输入的温度，T0为氢气在1pn时的沸点（单位为开尔文）,TV振动特征温度
+    double e1,er;                                      //er表示相应T值对应的e的阿尔法次方的值
+    long double a1=0,q=0,p=0,z1=0,Z=0,N=0,u1=0,U=0,N2,F=0,UV0=0,C0=0,Ut=0,Uv=0,Ur=0,Cv=0,Ct=0,Cr=0,m=0,n0=0;   //F表示自由能,Ct表示平动定体热容，Cv表示振动定体热容,Cr振动定体热容，Ut表示平动内能，Uv表示转动动能，Ur表示振动内能
 	                                                                                     //UV0表示理想双原子气体的内能,C0表示定体热容
-	srand((unsigned)time(NULL));                       //播种子
-	printf("请输入不小于224的温度（单位为K）T：\n");                           //本程序中T的最小值为224，,否则因数据溢出无法得到结果
-	scanf("%f",&T);
-	p=k0*T;
-	p=1/p;
+    srand((unsigned)time(NULL));                       //播种子
+    printf("请输入不小于224的温度（单位为K）T：\n");                           //本程序中T的最小值为224，,否则因数据溢出无法得到结果
+    scanf("%f",&T);
+    p=k0*T;
+    p=1/p;
     t1=T/T0;
-	er=140*pow(t1,1.5);
-
-	for(i=0;i<size;i++)
-	{
+    er=140*pow(t1,1.5);
+    for(i=0;i<size;i++)
+    {
         r=(i+1)*(i+1);                 //计算l的平方
-		eq[i]=-13.6*(1.60217e-19)/r;    //氢原子各能级对应能量的值
+	eq[i]=-13.6*(1.60217e-19)/r;    //氢原子各能级对应能量的值
         wq[i]=rand()%10;                //产生100以内的随机整数
-	    w1=wq[i];
-	    e1=eq[i];
-	    q=-p*e1;
-	    z1=w1*exp(q);
-		aq[i]=z1/er;
-		a1=aq[i];
-	    Z+=z1;
-		u1=a1*e1;
-		U+=u1;
+	w1=wq[i];
+	e1=eq[i];
+	q=-p*e1;
+	z1=w1*exp(q);
+	aq[i]=z1/er;
+	a1=aq[i];
+	Z+=z1;
+	u1=a1*e1;
+	U+=u1;
 	}
 	printf("粒子分配函数Z为：%g\n",Z);
     N=Z/er;
