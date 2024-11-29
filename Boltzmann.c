@@ -8,58 +8,81 @@
 #include <stdlib.h>
 #include<math.h>
 #include<time.h>
-#include <quadmath.h> 
-#include <unordered_map>
-#define INPUT_SIZE 100                                          //使用更高精度的数据类型（如果编译器支持）
-#define size  20
-#define k0   1.380650e-23                                       //波尔兹曼常量
-double Fact(int n);                                              //本程序多次用到阶乘，故定义用递归法求阶乘    
-void Boltzmann_System(int a[],int w[],int l);                    //玻尔兹曼系统微观状态数求解
-void Bose_System(int a[],int w[],int l);                         //波色系统求解微观状态数
-void Fermi_System(int a[],int w[],int l);                        //费米系统求解微观状态数
-Boltzmann();                                                     //基于波尔兹曼统计的相关求解
+#include <string.h>  // 添加 string.h 头文件
+#define SIZE 20
+#define INPUT_SIZE 100                                          // 使用更高精度的数据类型（如果编译器支持）
+#define ARRAY_SIZE  20
+#define BOLTZMANN_CONSTANT 1.380650e-23                         // 波尔兹曼常量
+
+long double Fact(long double n);                                         // 本程序多次用到阶乘，故定义用递归法求阶乘
+void Boltzmann_System(int a[], int w[], int l);                 // 玻尔兹曼系统微观状态数求解
+void Bose_System(int a[], int w[], int l);                      // 波色系统求解微观状态数
+void Fermi_System(int a[], int w[], int l);                     // 费米系统求解微观状态数                                             // 基于波尔兹曼统计的相关求解
+void read_int_array(int *array, int size, const char *prompt);
+void calculate_common(int a[], int w[], int l, long double (*fact_func)(int), void (*print_func)(double));
+void Boltzmann(double k0);
+
 
 // 计算阶乘
-__float128 Fact(int n) {
+long double Fact(long double n) {
     if (n < 0) return -1;
-    __float128 result = 1;
+    if (n == 0) return 1; // 阶乘为0时返回1
+    long double result = 1;
     for (int i = 2; i <= n; ++i) {
         result *= i;
     }
+    printf("Fact(%d) = %Lf\n", (long double)result); //调试输出  
     return result;
 }
 
-// 计算系统微观状态数 ，是一个通用函数
-void calculate_system(int a[], int w[], int l, double (*fact_func)(int), void (*print_func)(double)) {
+void calculate_common(int a[], int w[], int l, long double (*fact_func), void (*print_func)(double)) {
     int n = 0, i = 0;
-    long a1 = 0, w1 = 0, aw = 0;
-    double N = 1, W = 1, A = 1, WA = 1;
-    double SUM = 1;
+    int a1 = 0, w1 = 0;
+    double N = 1, W = 1.0, A = 1, SUM = 0;
 
-    // 计算总粒子数
     for (i = 0; i < l; i++) {
         n += a[i];
-    }
-    N = fact_func(n);
+        a1 = a[i];
+        w1 = w[i];
+        W *= pow(w1, a1);
+        A *= fact_func(a1);
 
-    // 计算微观状态数
-    for (i = 0; i < l; i++) {
-        a1 = a[i]; // 各能级上的粒子数数组
-        w1 = w[i]; // 各能级上的简并度数组
-        aw = w1 - a1;
-        W = fact_func(w1); //阶乘函数指针   
-        WA = fact_func(aw);
-        A = fact_func(a1);
-        if (A * WA == 0) {
-            fprintf(stderr, "除零错误。\n");
-            return;
-        }
-        SUM *= W / (A * WA);
     }
+
+    N = fact_func(n);
+    SUM = N * W / A;
     print_func(SUM);
 }
+// 打印波尔兹曼系统总的微观状态数
+void print_boltzmann_system(double sum) {
+    printf("波尔兹曼系统总的微观状态数为：%g\n", sum);
+}
 
-// 读取整数数组，确保输入为正整数
+// 打印波色系统总的微观状态数
+void print_bose_system(double sum) {
+    printf("波色系统总微观状态数%g\n", sum);
+}
+
+// 打印费米系统总的微观状态数
+void print_fermi_system(double sum) {
+    printf("费米系统总微观状态数%g\n", sum);
+}
+
+// 计算波尔兹曼系统微观状态数
+void Boltzmann_System(int a[], int w[], int l) {
+    calculate_common(a, w, l, Fact, print_boltzmann_system);
+}
+
+// 计算波色系统微观状态数
+void Bose_System(int a[], int w[], int l) {
+    calculate_common(a, w, l, Fact, print_bose_system);
+}
+
+// 计算费米系统微观状态数
+void Fermi_System(int a[], int w[], int l) {
+    calculate_common(a, w, l, Fact, print_fermi_system);
+}
+// 读取整数数组
 void read_int_array(int *array, int size, const char *prompt) {
     int i;
     char input[INPUT_SIZE];
@@ -74,8 +97,8 @@ void read_int_array(int *array, int size, const char *prompt) {
                 fprintf(stderr, "输入错误，请输入一个整数。\n");
                 continue;
             }
-            if (array[i] < 0) {
-                fprintf(stderr, "输入错误，请输入一个正整数。\n");
+            if (array[i] < 0 || array[i] >= SIZE) {
+                fprintf(stderr, "输入错误，请输入一个正整数且不大于%d。\n", SIZE);
                 continue;
             }
             break;
@@ -83,80 +106,54 @@ void read_int_array(int *array, int size, const char *prompt) {
     }
 }
 
-// 主函数，负责读取用户输入的能级数、各能级上的粒子数和简并度，并调用计算函数
+// 主函数
 void main() {
-    const int size = 20;
-    const double k0 = 1.380650e-23;
+    //const int SIZE = 20;
+    const double K0 = 1.380650e-23;
 
-    int a[size] = {0};
-    int w[size] = {0};
+    int a[SIZE];
+    int w[SIZE];
     int k, i = 0;
     char input[INPUT_SIZE];
 
     printf("请输入能级数l\n");
-    while (1) {
-        if (fgets(input, sizeof(input), stdin) == NULL) {
-            fprintf(stderr, "读取输入失败。\n");
-            return;
-        }
-        if (sscanf(input, "%d", &k) != 1 || k <= 0 || k > size) {
-            fprintf(stderr, "输入错误，请输入一个正整数。\n");
-            continue;
-        }
-        break;
+while (1) {
+    if (fgets(input, sizeof(input), stdin) == NULL) {
+        fprintf(stderr, "读取输入失败。\n");
+        return;
     }
-
+    if (sscanf(input, "%d", &k) != 1 || k <= 0 || k > SIZE) {
+        fprintf(stderr, "输入错误，请输入一个正整数且不大于%d。\n", SIZE);
+        continue;
+    }
+    break;
+}
     read_int_array(a, k, "请依次输入l个各能级上的粒子数");
     read_int_array(w, k, "请依次输入l个各能级上的简并度");
 
-    try {
-        Boltzmann_System(a, w, k);
-        Bose_System(a, w, k);
-        Fermi_System(a, w, k);
-        Boltzmann(k0);
-    } catch (const std::exception& e) {
-        fprintf(stderr, "发生异常: %s\n", e.what());
-    }
-}
-//计算玻尔兹曼系统微观状态数
-void Boltzmann_System(int a[], int w[], int l) {
-    int n = 0, i = 0;
-    int a1 = 0, w1 = 0;
-    __float128 N = 1, W = 1.0, A = 1, SUM = 0;
-
-    for (i = 0; i < l; i++) {
-        n += a[i];
-        a1 = a[i];
-        w1 = w[i];
-        W *= pow(w1, a1);
-        A *= Fact(a1);
-    }
-
-    N = Fact(n);
-    SUM = N * W / A;
-    printf("波尔兹曼系统总的微观状态数为：%g\n", (long double)SUM);
-}
-//计算波色系统的微观状态数
-void Bose_System(int a[], int w[], int l) {
-    calculate_system(a, w, l, Fact, [](double sum) { printf("波色系统总微观状态数%g\n", sum); });
+    Boltzmann_System(a, w, k);
+    Bose_System(a, w, k);
+    Fermi_System(a, w, k);
+    Boltzmann(K0);
 }
 
-//计算费米系统的微观状态函数    
-void Fermi_System(int a[], int w[], int l) {
-    calculate_system(a, w, l, Fact, [](double sum) { printf("费米系统总微观状态数%g\n", sum); });
 
-}        
 // 波尔兹曼统计的相关求解   
-//功能：基于波尔兹曼统计计算粒子分配函数Z、系统总粒子数N、总内能U、自由能F、定体热容Ct\Cv、Cr等
+// 功能：基于波尔兹曼统计计算粒子分配函数Z、系统总粒子数N、总内能U、自由能F、定体热容Ct\Cv、Cr等
 void Boltzmann(double k0) {
     const int size = 20;
-    int wq[size] = {0};
-    double aq[size] = {0};
-    long double eq[size] = {0};
+    int wq[size];
+    double aq[size];
+    long double eq[size];
     int i, r;
     float T, T0 = 20.3, t1, TV;
     double p, z1, Z = 0, U = 0, Ct, Cr, Cv, UV0, C0, Ut, Uv, Ur;
     long double er;
+
+    // 初始化变长数组
+    memset(wq, 0, sizeof(wq));
+    memset(aq, 0, sizeof(aq));
+    memset(eq, 0, sizeof(eq));
 
     srand((unsigned)time(NULL));
     printf("请输入不小于224的温度（单位为K）T：\n");
@@ -171,14 +168,14 @@ void Boltzmann(double k0) {
     p = k0 * T;
     p = 1 / p;
     t1 = T / T0;
-    er = 140 * pow(t1, 1.5);
+    er = 140 * powl(t1, 1.5);
 
     for (i = 0; i < size; i++) {
         r = (i + 1) * (i + 1);
-        eq[i] = -13.6 * (1.60217e-19) / r;
+        eq[i] = -13.6 * 1.60217e-19L / r;
         wq[i] = rand() % 10;
         double q = -p * eq[i];
-        z1 = wq[i] * exp(q);
+        z1 = wq[i] * expl(q);
         aq[i] = z1 / er;
         Z += z1;
         U += aq[i] * eq[i];
@@ -203,7 +200,7 @@ void Boltzmann(double k0) {
     Ct = 1.5 * k0 * T;
     Ut = Ct * N;
     double m = TV / T;
-    double F = -Cr * N * log(Z);
+    double F = -Cr * N * logl(Z);
     printf("系统自由能F为：%g\n", F);
 
     if (m != 0) {
