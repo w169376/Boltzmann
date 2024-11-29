@@ -1,17 +1,6 @@
-/*****************************************************************************
+/*****************************************************************************80
     Copyright 2016 Songsong Wang <sswang@hit.edu.cn>
-*----------------------------------------------------------------------------
-    flowchart TD
-    Start[开始] --> ReadL[读取能级数l]
-    ReadL -->|输入l| ReadParticles[读取各能级上的粒子数]
-    ReadParticles --> ReadDegeneracies[读取各能级上的简并度]
-    ReadDegeneracies --> CalculateBoltzmann[计算波尔兹曼系统]
-    CalculateBoltzmann --> CalculateBose[计算波色系统]
-    CalculateBose --> CalculateFermi[计算费米系统]
-    CalculateFermi --> CalculateBoltzmannStats[计算波尔兹曼统计物理量]
-    CalculateBoltzmannStats --> End[结束]
-------------------------------------------------------------------------------*/ 
-/*----------------------------------------------------------------------------
+/*----------------------------------------------------------------------------80
     Author: Songsong Wang <sswang@hit.edu.cn>
     Date: 2016.01.04
 ------------------------------------------------------------------------------*/
@@ -40,7 +29,7 @@ __float128 Fact(int n) {
     return result;
 }
 
-// 计算系统微观状态数
+// 计算系统微观状态数 ，是一个通用函数
 void calculate_system(int a[], int w[], int l, double (*fact_func)(int), void (*print_func)(double)) {
     int n = 0, i = 0;
     long a1 = 0, w1 = 0, aw = 0;
@@ -55,10 +44,10 @@ void calculate_system(int a[], int w[], int l, double (*fact_func)(int), void (*
 
     // 计算微观状态数
     for (i = 0; i < l; i++) {
-        a1 = a[i];
-        w1 = w[i];
+        a1 = a[i]; // 各能级上的粒子数数组
+        w1 = w[i]; // 各能级上的简并度数组
         aw = w1 - a1;
-        W = fact_func(w1);
+        W = fact_func(w1); //阶乘函数指针   
         WA = fact_func(aw);
         A = fact_func(a1);
         if (A * WA == 0) {
@@ -70,7 +59,7 @@ void calculate_system(int a[], int w[], int l, double (*fact_func)(int), void (*
     print_func(SUM);
 }
 
-// 读取整数数组
+// 读取整数数组，确保输入为正整数
 void read_int_array(int *array, int size, const char *prompt) {
     int i;
     char input[INPUT_SIZE];
@@ -94,7 +83,7 @@ void read_int_array(int *array, int size, const char *prompt) {
     }
 }
 
-// 主函数
+// 主函数，负责读取用户输入的能级数、各能级上的粒子数和简并度，并调用计算函数
 void main() {
     const int size = 20;
     const double k0 = 1.380650e-23;
@@ -129,7 +118,7 @@ void main() {
         fprintf(stderr, "发生异常: %s\n", e.what());
     }
 }
-
+//计算玻尔兹曼系统微观状态数
 void Boltzmann_System(int a[], int w[], int l) {
     int n = 0, i = 0;
     int a1 = 0, w1 = 0;
@@ -147,14 +136,18 @@ void Boltzmann_System(int a[], int w[], int l) {
     SUM = N * W / A;
     printf("波尔兹曼系统总的微观状态数为：%g\n", (long double)SUM);
 }
-
+//计算波色系统的微观状态数
 void Bose_System(int a[], int w[], int l) {
     calculate_system(a, w, l, Fact, [](double sum) { printf("波色系统总微观状态数%g\n", sum); });
 }
 
+//计算费米系统的微观状态函数    
 void Fermi_System(int a[], int w[], int l) {
     calculate_system(a, w, l, Fact, [](double sum) { printf("费米系统总微观状态数%g\n", sum); });
+
 }        
+// 波尔兹曼统计的相关求解   
+//功能：基于波尔兹曼统计计算粒子分配函数Z、系统总粒子数N、总内能U、自由能F、定体热容Ct\Cv、Cr等
 void Boltzmann(double k0) {
     const int size = 20;
     int wq[size] = {0};
